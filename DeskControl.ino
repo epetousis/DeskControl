@@ -17,7 +17,7 @@ along with DeskControl.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <DeskComms.h>
 #include <LiquidCrystal.h>
-DeskComms deskComms(1,0);
+DeskComms deskComms(6,7);
 LiquidCrystal statusLCD(12, 10, 11, 2, 3, 4, 5);
 
 #define VERSION "1.0"

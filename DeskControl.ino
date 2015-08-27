@@ -17,7 +17,7 @@ along with DeskControl.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <DeskComms.h>
 #include <LiquidCrystal.h>
-DeskComms deskComms(6,7);
+DeskComms deskComms(7,6);
 LiquidCrystal statusLCD(12, 10, 11, 2, 3, 4, 5);
 
 #define VERSION "1.0"
@@ -34,8 +34,30 @@ void setup() {
 	statusLCD.write("PC Not Connected");
 }
 
+void clearSecondLine(){
+	statusLCD.clear();
+	statusLCD.write("WiDesk v");
+	statusLCD.write(VERSION);
+}
+
 void loop() {
 	// put your main code here, to run repeatedly:
-	deskComms.toggleLightChannel(YELLOW, 2, true);
-	delay(500);
+	if (Serial.available() > 0) {
+		byte bytes[3];
+		Serial.readBytes(bytes, 3);
+		if (bytes[0] == 0x99 && bytes[1] == 0x61) {
+			clearSecondLine();
+			statusLCD.setCursor(0,1);
+			statusLCD.write("PC Connected");
+		} else if (bytes[0] == 0x90 || bytes[0] == 0x80) {
+			//0x90 0x00 0x09
+			// command, bank, channel
+			// on, yellow bank, channel 9
+			if (bytes[0]==0x90) {
+				deskComms.toggleLightChannel((MasterColour)bytes[1], bytes[2], true);
+			} else {
+				deskComms.toggleLightChannel((MasterColour)bytes[1], bytes[2], false);
+			}
+		}
+	}
 }

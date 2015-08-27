@@ -27,6 +27,7 @@ class DeskComms
 	public:
 		DeskComms(int rxPin, int txPin);
 		void begin();
+		bool readLightChannel(MasterColour master, int channel);
 		void toggleLightChannel(MasterColour master, int channel, bool state);
 	private:
 		SoftwareSerial _midiPort;

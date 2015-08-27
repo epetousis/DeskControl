@@ -25,7 +25,7 @@ enum MasterColour { YELLOW, RED };
 class DeskComms
 {
 	public:
-		DeskComms(int txPin, int rxPin);
+		DeskComms(int rxPin, int txPin);
 		void begin();
 		void toggleLightChannel(MasterColour master, int channel, bool state);
 	private:

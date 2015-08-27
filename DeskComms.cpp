@@ -16,13 +16,15 @@ along with DeskControl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "DeskComms.h"
+#include <arduino.h>
 
-DeskComms::DeskComms(int txPin, int rxPin) : _midiPort (txPin, rxPin) {
+DeskComms::DeskComms(int rxPin, int txPin) : _midiPort (rxPin, txPin) {
 	_txPin = txPin;
 	_rxPin = rxPin;
 }
 
 void DeskComms::begin() {
+	pinMode(_txPin, OUTPUT);
 	_midiPort.begin(31250);
 }
 
@@ -47,8 +49,6 @@ void DeskComms::toggleLightChannel(MasterColour master, int channel, bool state)
 	}
 	if (channel <= 0 || channel > 36)
 		return;
-	_midiPort.write(channel+48); // 31-54 is channels 1-36 +48
+	_midiPort.write(channel+47); // 31-54 is channels 1-36 +48
 	_midiPort.write(0x7f); // TODO: check if using values other than 0x7f control brightness
-	// cmd can't be greater than 127
-	// data values can't be less than 127
 }

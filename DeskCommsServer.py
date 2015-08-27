@@ -15,7 +15,7 @@ except serial.serialutil.SerialException:
 	else:
 		sys.exit("Error: Could not connect to Arduino.")
 
-if (arduino):
+if arduino:
 	sleep(2)
 	arduino.write(b'\x99\x61')
 	print("Connected to Arduino.")
@@ -43,6 +43,7 @@ while True:
 			handshake(addr)
 			print("Handshake complete.");
 		elif data[0] == 0x90 or data[0] == 0x80:
-			arduino.write(data)
+			if arduino:
+				arduino.write(data)
 		else:
 			print(data)

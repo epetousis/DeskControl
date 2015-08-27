@@ -35,6 +35,14 @@ bankvalue = 0;
 $("[name='deskswitch']").bootstrapSwitch();
 $("[name='deskswitch']").on('switchChange.bootstrapSwitch', function (event, state) {
 	//this.id;
+	xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("POST","comms.php",true);
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	if (state) {
+		xmlhttp.send("setChannel=on&bank="+bankvalue+"&channel="+this.id);
+	} else {
+		xmlhttp.send("setChannel=off&bank="+bankvalue+"&channel="+this.id);
+	}
 });
 function bankButtonClicked(id) {
 	classname = document.getElementById(id).className;

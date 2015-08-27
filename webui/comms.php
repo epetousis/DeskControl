@@ -1,10 +1,4 @@
 <?php
- 
-/*
-    Simple php udp socket client
-*/
- 
-//Reduce errors
 error_reporting(~E_WARNING);
  
 $server = '127.0.0.1';
@@ -17,34 +11,21 @@ if(!($sock = socket_create(AF_INET, SOCK_DGRAM, 0)))
      
     die("Couldn't create socket: [$errorcode] $errormsg \n");
 }
- 
-echo "Socket created \n";
- 
-//Communication loop
-while(1)
-{
-    //Take some input to send
-    echo 'Enter a message to send : ';
-    $input = fgets(STDIN);
-     
-    //Send the message to the server
-    if( ! socket_sendto($sock, chr(0x42) , strlen($input) , 0 , $server , $port))
-    {
-        $errorcode = socket_last_error();
-        $errormsg = socket_strerror($errorcode);
-         
-        die("Could not send data: [$errorcode] $errormsg \n");
-    }
-         
-    //Now receive reply from server and print it
-    if(socket_recv ( $sock , $reply , 2045 , MSG_WAITALL ) === FALSE)
-    {
-        $errorcode = socket_last_error();
-        $errormsg = socket_strerror($errorcode);
-         
-        die("Could not receive data: [$errorcode] $errormsg \n");
-    }
-     
-    echo "Reply : $reply";
-}
+
+if ($_POST["setChannel"]) {
+	$command = 0x90;
+	$bank = 0x00;
+	if ($_POST["setChannel"]=="off") {
+		$command = 0x80;
+	}
+	if ($_POST["bank"] == "1") {
+		$bank = 0x01;
+	}
+	$channel = intval($_POST["channel"]);
+	socket_sendto($sock, pack("C*", $command, $bank, $channel) , 3, 0 , $server , $port);
+}/* elseif ($_POST["getChannel"]) {
+	socket_sendto($sock, chr(0x42) , strlen($input) , 0 , $server , $port);
+	socket_recv ( $sock , $reply , 2045 , MSG_WAITALL ) === FALSE
+}*/
+socket_close($sock);
 ?>

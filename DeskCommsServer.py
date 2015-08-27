@@ -14,6 +14,8 @@ except serial.serialutil.SerialException:
 sleep(2)
 arduino.write(b'\x99\x61')
 print("Connected to Arduino.")
+print("Switches not working? Make sure that your desk has MIDI enabled.")
+print("WARNING: LSC maXim desks have a bug that causes a system reset on the desk if MIDI is enabled when turning it off. Remember to turn MIDI off before you turn off the desk!")
 
 def handshake(address):
 	if arduino is None:

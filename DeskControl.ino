@@ -23,12 +23,12 @@ DeskComms deskComms(7,6);
 #define DIMLIGHT 1
 
 #ifdef DIMLIGHT
-#define MAX_ANALOG_VAL 256
+#define MAX_ANALOG_VAL 255
 #define MIN_ANALOG_VAL 240
 #define FADE_INTERVAL 50
 #else
 #define MIN_ANALOG_VAL 0
-#define MAX_ANALOG_VAL 256
+#define MAX_ANALOG_VAL 255
 #define FADE_INTERVAL 5
 #endif
 
@@ -36,19 +36,31 @@ void rgbFadeToColour(int fromColour, int toColour) {
 	// if pin == -1
 	int toPin = 9 + toColour;
 	int fromPin = 9 + fromColour;
-	if (fromColour >= 0) {
+	if (fromColour >= 0 && toColour >= 0) {
 		int i, j;
-		for (i = MIN_ANALOG_VAL, j = MAX_ANALOG_VAL; j > MIN_ANALOG_VAL; i++, j--) {
+		for (i = MIN_ANALOG_VAL, j = MAX_ANALOG_VAL; j >= MIN_ANALOG_VAL; i++, j--) {
 			analogWrite(fromPin, i);
 			analogWrite(toPin, j);
 			delay(FADE_INTERVAL);
 		}
 		return;
+	} else if (fromColour < 0) {
+		for (int i = MAX_ANALOG_VAL; i >= MIN_ANALOG_VAL; i--) {
+			analogWrite(toPin, i);
+			delay(FADE_INTERVAL);
+		}
+	} else if (toColour < 0) {
+		for (int i = MIN_ANALOG_VAL; i <= MAX_ANALOG_VAL; i++) {
+			analogWrite(fromPin, i);
+			delay(FADE_INTERVAL);
+		}
 	}
-	for (int i = MAX_ANALOG_VAL; i != MIN_ANALOG_VAL; i--) {
-		analogWrite(toPin, i);
-		delay(FADE_INTERVAL);
-	}
+}
+
+void pulseColour(int colour) {
+	rgbFadeToColour(-1, colour);
+	delay(500);
+	rgbFadeToColour(colour, -1);
 }
 
 void setup() {
@@ -61,16 +73,20 @@ void setup() {
 	digitalWrite(9, HIGH); // red
 	digitalWrite(10, HIGH); // green
 	digitalWrite(11, HIGH); // blue
-	rgbFadeToColour(-1, 2);
 }
+
+bool connected = false;
 
 void loop() {
 	// put your main code here, to run repeatedly:
+	if (!connected)
+		pulseColour(2);
 	if (Serial.available() > 0) {
 		byte bytes[3];
 		Serial.readBytes(bytes, 3);
 		if (bytes[0] == 0x99 && bytes[1] == 0x61) {
-			rgbFadeToColour(2, 1);
+			connected = true;
+			rgbFadeToColour(-1, 1);
 		} else if (bytes[0] == 0x90 || bytes[0] == 0x80) {
 			//0x90 0x00 0x09
 			// command, bank, channel

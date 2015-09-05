@@ -18,26 +18,50 @@ along with DeskControl.  If not, see <http://www.gnu.org/licenses/>.
 #include <DeskComms.h>
 #include <LiquidCrystal.h>
 DeskComms deskComms(7,6);
-LiquidCrystal statusLCD(12, 10, 11, 2, 3, 4, 5);
 
-#define VERSION "1.0"
+//comment out for full brightness LED.
+#define DIMLIGHT 1
+
+#ifdef DIMLIGHT
+#define MAX_ANALOG_VAL 256
+#define MIN_ANALOG_VAL 240
+#define FADE_INTERVAL 50
+#else
+#define MIN_ANALOG_VAL 0
+#define MAX_ANALOG_VAL 256
+#define FADE_INTERVAL 5
+#endif
+
+void rgbFadeToColour(int fromColour, int toColour) {
+	// if pin == -1
+	int toPin = 9 + toColour;
+	int fromPin = 9 + fromColour;
+	if (fromColour >= 0) {
+		int i, j;
+		for (i = MIN_ANALOG_VAL, j = MAX_ANALOG_VAL; j > MIN_ANALOG_VAL; i++, j--) {
+			analogWrite(fromPin, i);
+			analogWrite(toPin, j);
+			delay(FADE_INTERVAL);
+		}
+		return;
+	}
+	for (int i = MAX_ANALOG_VAL; i != MIN_ANALOG_VAL; i--) {
+		analogWrite(toPin, i);
+		delay(FADE_INTERVAL);
+	}
+}
 
 void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(9600);
 	deskComms.begin();
-	statusLCD.begin(16, 2);
-	pinMode(13, OUTPUT);
-	statusLCD.write("WiDesk v");
-	statusLCD.write(VERSION);
-	statusLCD.setCursor(0,1);
-	statusLCD.write("PC Not Connected");
-}
-
-void clearSecondLine(){
-	statusLCD.clear();
-	statusLCD.write("WiDesk v");
-	statusLCD.write(VERSION);
+	pinMode(9, OUTPUT);
+	pinMode(10, OUTPUT);
+	pinMode(11, OUTPUT);
+	digitalWrite(9, HIGH); // red
+	digitalWrite(10, HIGH); // green
+	digitalWrite(11, HIGH); // blue
+	rgbFadeToColour(-1, 2);
 }
 
 void loop() {
@@ -46,9 +70,7 @@ void loop() {
 		byte bytes[3];
 		Serial.readBytes(bytes, 3);
 		if (bytes[0] == 0x99 && bytes[1] == 0x61) {
-			clearSecondLine();
-			statusLCD.setCursor(0,1);
-			statusLCD.write("PC Connected");
+			rgbFadeToColour(2, 1);
 		} else if (bytes[0] == 0x90 || bytes[0] == 0x80) {
 			//0x90 0x00 0x09
 			// command, bank, channel

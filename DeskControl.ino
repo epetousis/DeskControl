@@ -76,17 +76,26 @@ void setup() {
 }
 
 bool connected = false;
+long times = 0;
 
 void loop() {
 	// put your main code here, to run repeatedly:
-	if (!connected)
+	if (!connected) {
 		pulseColour(2);
+	} else if (times > 0) {
+		times++;
+		if (times >= 1000000) {
+			times = 0;
+			rgbFadeToColour(1, -1);
+		}
+	}
 	if (Serial.available() > 0) {
 		byte bytes[3];
 		Serial.readBytes(bytes, 3);
 		if (bytes[0] == 0x99 && bytes[1] == 0x61) {
 			connected = true;
 			rgbFadeToColour(-1, 1);
+			times = 1;
 		} else if (bytes[0] == 0x90 || bytes[0] == 0x80) {
 			//0x90 0x00 0x09
 			// command, bank, channel
